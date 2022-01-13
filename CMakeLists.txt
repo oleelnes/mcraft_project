@@ -3,7 +3,7 @@
 #
 cmake_minimum_required (VERSION 3.15)
 
-project ("Minecraft" VERSION 0.1)
+project ("LikeCraft" VERSION 0.1)
 
 # executable file creation
 add_executable(${PROJECT_NAME})

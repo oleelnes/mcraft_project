@@ -142,7 +142,7 @@ void RenderHandler::init() {
 	cameraInit();
 	projectionInit();
 
-	world->generate_terrain(3, 3);
+	world->generate_terrain(64, 64);
 	glGenVertexArrays(1, &worldVAO);
 	worldVAO = world->createTerrainVAO();
 	srand(time(NULL)); rand();
@@ -152,7 +152,7 @@ void RenderHandler::init() {
 
 //Camera and transformations
 void RenderHandler::cameraInit() {
-	cameraPos = glm::vec3(6.0f, 8.0f, 8.0f);
+	cameraPos = glm::vec3(6.0f, 60.0f, 8.0f);
 	cameraFront = glm::vec3(0.0f, 0.0f, 0.0f);
 	cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 }

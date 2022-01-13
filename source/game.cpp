@@ -86,7 +86,7 @@ void game::input()
 		glfwSetWindowShouldClose(gameWindow->winWindow, true);
 		
 	}
-	float cameraSpeed = 2.5 * deltaTime;
+	float cameraSpeed = 7 * deltaTime;
 	if (glfwGetKey(gameWindow->winWindow, GLFW_KEY_UP) == GLFW_PRESS || (glfwGetMouseButton(gameWindow->winWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS
 		&& glfwGetKey(gameWindow->winWindow, GLFW_KEY_W) == GLFW_PRESS)) {
 		renderHandler->keyInput(10, cameraSpeed);

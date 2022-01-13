@@ -22,17 +22,7 @@ struct BlockVertex {
     glm::vec2 texCoords;
 };
 
-struct Neighbors {
-    int north;
-    int north_east;
-    int east;
-    int south_east; 
-    int south;
-    int south_west;
-    int west;
-    int north_west;
-    int gridpos;
-};
+
 
 struct Chunk {
     int chunk_type;
@@ -43,9 +33,6 @@ struct Chunk {
 struct Coloumn{
     glm::vec2 location_components; // (location x, location z)
     std::vector<glm::vec2> coloumns; // (top_block, bottom_block) in y values.
-    //std::vector<int> visible_blocks; // What blocks are visible, and should thus be rendered?
-    glm::vec2 chunk; //what chunk this Coloumn is a part of!
-    //Neighbors neighbors; //a struct that stores the information on the neighboring grid positions of this specific coloumn
 };
 
 struct VisibleBlock {
@@ -71,7 +58,6 @@ public:
     void calculateVisibleInit(int chunk_x, int chunk_z, int num_chunks_x, int num_chunks_z);
     int calcInternalGridPos(int x, int z);
     int calcGlobalGridPos(int x, int z, int chunk_x, int chunk_z, int num_chunks_x);
-    Neighbors calcNeighbors(int x, int z, int chunk_x, int chunk_z, int num_chunks_x, int num_chunks_z);
     glm::vec2 calcColoumnHeight(int x, int z, int num_chunks_x, int num_chunks_z);
     GLuint createTerrainVAO();
     GLuint terrainVAO;
@@ -133,6 +119,9 @@ private:
     1.0f, 1.0f, 1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
     0.0f, 1.0f, 1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
-
     };
+
+    void perlinNoise2D(int width, int height, float* fSeed, int nOctaves, float fBias, float* fOutput);
+    float* fNoiseSeed2D = nullptr;
+    float* fPerlinNoise2D = nullptr;
 };

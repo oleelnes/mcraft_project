@@ -13,43 +13,19 @@ World::World(){
 	srand(time(NULL)); rand();
 }
 
-void World::generate_terrain(int chunks_x, int chunks_z){
-	//int chunks = chunks_x * chunks_z;
-	int curr_chunk = 0;
-	for (int c_x = 0; c_x < chunks_x; c_x++) {
-		for (int c_z = 0; c_z < chunks_z; c_z++) {
-			chunks.push_back({});
-			auto& vertex_chunk = chunks.back();
-			vertex_chunk.chunk_type = 1;
-			vertex_chunk.x_vector = { rand() % 3, rand() % 5, rand() % 5 };
-			vertex_chunk.z_vector = { rand() % 3, rand() % 5, rand() % 5 };
-			for (int x = 0; x < 16; x++) {
-				for (int z = 0; z < 16; z++) {
-					coloumns.push_back({});
-					auto& vertex = coloumns.back();
-					vertex.chunk = { 0, 0 };
-					vertex.location_components = { x + 16 * c_x, z + 16 * c_z};
+void World::generate_terrain(int width, int length){
+	int x = width;
+	int y = length;
 
-					Neighbors neighbors = calcNeighbors(x, z, c_x, c_z, chunks_x, chunks_z);
-					if (curr_chunk == 0) {
-						std::cout << "gridpos: " << neighbors.gridpos <<  " west: " << neighbors.west << " south: " << neighbors.south << "\n";
-					}
-					int height = 5;
-					//if (neighbors.west > 0) height = coloumns[neighbors.west].coloumns[0].y;
-					//else if (neighbors.south > 0) height = coloumns[neighbors.south].coloumns[0].y;
-					//else height = 5;
-					//if (height < 0) height = 0;
 
-					vertex.coloumns = { glm::vec2(0.0f, height + (1 - rand() % 2)) };
-					//vertex.neighbors = calcNeighbors(x, z, c_x, c_z, chunks_x, chunks_z);
-					//vertex.visible_blocks = { 100 };
-				}
-			}
-			curr_chunk++;
-		}
-	}
-	std::cout << "size of the thing: " << coloumns.size();
-	calculateVisibleInit(0, 0, chunks_x, chunks_z);
+
+	fNoiseSeed2D = new float[x * y];
+	fPerlinNoise2D = new float[x * y];
+	for (int i = 0; i < x * y; i++) fNoiseSeed2D[i] = (float)rand() / (float)RAND_MAX;
+
+	perlinNoise2D(x, y, fNoiseSeed2D, 5, 0.95f, fPerlinNoise2D);
+	
+	calculateVisibleInit(0, 0, width, length);
 }
 
 void World::add_block(int x, int y, int z){
@@ -57,7 +33,7 @@ void World::add_block(int x, int y, int z){
 	//algo (or function call) that updates the visible_blocks vector
 }
 
-void World::calculateVisibleInit(int chunk_x, int chunk_z, int num_chunks_x, int num_chunks_z){
+void World::calculateVisibleInit(int chunk_x, int chunk_z, int width, int length){
 	//first, set all top blocks to visible
 	//for the time being, all top blocks are dirt.
 	for (int i = 0; i < coloumns.size(); i++) {
@@ -69,62 +45,45 @@ void World::calculateVisibleInit(int chunk_x, int chunk_z, int num_chunks_x, int
 	}
 
 	//the underneath function renders all the edge blocks -- currently only one of the walls :ODOT
-	for (int x = 0; x < 2; x++) {
-		for (int z = 0; z < 2; z++) {
-			int chunkster = 0; int num_chunkster = 0;
-			if (x == 0) { chunkster = chunk_x; num_chunkster = num_chunks_x; }
-			else { chunkster = chunk_z; num_chunkster = num_chunks_z; }
-			for (int c = chunkster; c < num_chunkster; c++) {
-				for (int i = 0; i < 16; i++) {
-					int gp = 0;
-					if(x == 0)  gp = calcGlobalGridPos(i, 15 * z, c, z * (num_chunks_z - 1), num_chunks_x);
-					else gp = calcGlobalGridPos(15 * z, i, z * (num_chunks_x - 1), c, num_chunks_x);
-					if (gp < coloumns.size()) {
-						for (int j = 0; j < coloumns[gp].coloumns[0].y; j++) {
-							visible_blocks.push_back({});
-							auto& vertex = visible_blocks.back();
-							vertex.location = { coloumns[gp].location_components.x, coloumns[gp].coloumns[0].y - j, coloumns[gp].location_components.y };
-							vertex.block_type = 0;
-						}
-					}
-					else std::cout << "gp out of bounds!" << "\n";
-				}
-			}
-		}
-	}
+	
 	
 	//finds remaining visible blocks by checking a coloumn's neighboring coloumns' top level (north, west, south, east)
-	for (int i = 0; i < coloumns.size(); i++) {
-		Neighbors neighbors = calcNeighbors(coloumns[i].location_components.x, coloumns[i].location_components.y, coloumns[i].chunk.x, coloumns[i].chunk.y, num_chunks_x, num_chunks_z);
-		int lowest = 0;
-		if (neighbors.north > 0 && (coloumns[i].coloumns[0].y - coloumns[neighbors.north].coloumns[0].y) > lowest) {
-			lowest = coloumns[i].coloumns[0].y - coloumns[neighbors.north].coloumns[0].y;
-		}
-		if (neighbors.east > 0 && (coloumns[i].coloumns[0].y - coloumns[neighbors.east].coloumns[0].y) > lowest) {
-			lowest = coloumns[i].coloumns[0].y - coloumns[neighbors.east].coloumns[0].y;
-		}
-		if (neighbors.south > 0 && (coloumns[i].coloumns[0].y - coloumns[neighbors.south].coloumns[0].y) > lowest) {
-			lowest = coloumns[i].coloumns[0].y - coloumns[neighbors.south].coloumns[0].y;
-		}
-		if (neighbors.west > 0 && (coloumns[i].coloumns[0].y - coloumns[neighbors.west].coloumns[0].y) > lowest) {
-			lowest = coloumns[i].coloumns[0].y - coloumns[neighbors.west].coloumns[0].y;
-		}
-		for (int j = 1; j <= lowest + 1; j++) {
-			visible_blocks.push_back({});
-			auto& vertex = visible_blocks.back();
-			vertex.location = { coloumns[i].location_components.x, coloumns[i].coloumns[0].y - j, coloumns[i].location_components.y };
-			vertex.block_type = 0;
-		}
-	}
+	for (int z = 1; z < length - 1; z++) {
+		for (int x = 1; x < width - 1; x++) {
+			int diff = 0;
+			if (coloumns[z * width + x - 1].coloumns[0].y - coloumns[z * width + x].coloumns[0].y > diff)
+				diff = coloumns[z * width + x - 1].coloumns[0].y - coloumns[z * width + x].coloumns[0].y;
+			if (coloumns[z * width + x + 1].coloumns[0].y - coloumns[z * width + x].coloumns[0].y > diff)
+				diff = coloumns[z * width + x + 1].coloumns[0].y - coloumns[z * width + x].coloumns[0].y;
+			if (coloumns[z * width + x + width].coloumns[0].y - coloumns[z * width + x].coloumns[0].y > diff)
+				diff = coloumns[z * width + x + width].coloumns[0].y - coloumns[z * width + x].coloumns[0].y;
+			if (coloumns[z * width + x - width].coloumns[0].y - coloumns[z * width + x].coloumns[0].y > diff)
+				diff = coloumns[z * width + x - width].coloumns[0].y - coloumns[z * width + x].coloumns[0].y;
 
-	//nothing functional here yet
-	/*for (int i = 0; i < coloumns.size(); i++) {
-		if (coloumns[i].coloumns.size() > 1) {
-			for (int j = 0; j < coloumns[i].coloumns.size(); j++) {
-				//if(coloumns[i].coloumns[j].y < coloumns[i + 1].)
+			for (int i = 0; i < diff; i++) {
+				visible_blocks.push_back({});
+				auto& vertex = visible_blocks.back();
+				vertex.location = { coloumns[z * width + x].location_components.x, coloumns[z * width + x].coloumns[0].y - i, coloumns[z * width + x].location_components.y };
+				vertex.block_type = 0;
+			}
+			int neg_diff = 0;
+			if (coloumns[z * width + x].coloumns[0].y - coloumns[z * width + x - 1].coloumns[0].y > neg_diff)
+				neg_diff = coloumns[z * width + x].coloumns[0].y - coloumns[z * width + x - 1].coloumns[0].y;
+			if (coloumns[z * width + x].coloumns[0].y - coloumns[z * width + x + 1].coloumns[0].y > neg_diff)
+				neg_diff = coloumns[z * width + x].coloumns[0].y - coloumns[z * width + x + 1].coloumns[0].y;
+			if (coloumns[z * width + x].coloumns[0].y - coloumns[z * width + x + width].coloumns[0].y > neg_diff)
+				neg_diff = coloumns[z * width + x].coloumns[0].y - coloumns[z * width + x + width].coloumns[0].y;
+			if (coloumns[z * width + x].coloumns[0].y - coloumns[z * width + x - width].coloumns[0].y > neg_diff)
+				neg_diff = coloumns[z * width + x].coloumns[0].y - coloumns[z * width + x - width].coloumns[0].y;
+
+			for (int i = 0; i < neg_diff; i++) {
+				visible_blocks.push_back({});
+				auto& vertex = visible_blocks.back();
+				vertex.location = { coloumns[z * width + x].location_components.x, coloumns[z * width + x].coloumns[0].y - i, coloumns[z * width + x].location_components.y };
+				vertex.block_type = 0;
 			}
 		}
-	}*/
+	}
 	
 }
 
@@ -217,105 +176,7 @@ unsigned int World::newActiveBlock(int type, int x_start, int y_start, int z_sta
 	return activeBlockVAO;
 }
 
-Neighbors World::calcNeighbors(int x, int z, int chunk_x, int chunk_z, int num_chunks_x, int num_chunks_z)
-{
-	Neighbors tempneighbors;
-	auto global_gridpos = calcGlobalGridPos(x, z, chunk_x, chunk_z, num_chunks_x); //(x * z) + x; //the inputted x and z are already half-fabricated global values, thus we don't need the extensive calc.
 
-	//here we set all the parameters as the normally are, then alter them through the statements depending on the 
-	//grid position's unique situation before "tempneighbors" is returned
-	tempneighbors.north = global_gridpos ;
-	tempneighbors.north_east = global_gridpos ;
-	tempneighbors.east = global_gridpos + 1;
-	tempneighbors.south_east = global_gridpos ;
-	tempneighbors.south = global_gridpos - (15 * num_chunks_x);
-	tempneighbors.south_west = global_gridpos ;
-	tempneighbors.west = global_gridpos - 1;
-	tempneighbors.north_west = global_gridpos ;
-	tempneighbors.gridpos = global_gridpos;
-
-	if ((x == 0 || x == 15 * num_chunks_x) && (z == 0 || z == 15 * num_chunks_z)) {
-		//this means that we are in a corner
-		if (x == 0) {
-			//left side
-			if (z == 0) {
-				//bottom-left corner
-				tempneighbors.south_west = -101;
-				tempneighbors.north_west = -101;
-				tempneighbors.west = -101;
-				tempneighbors.south = -101;
-				tempneighbors.south_east = -101;
-				return tempneighbors;
-			}
-			else {
-				//top-left corner
-				tempneighbors.south_west = -101;
-				tempneighbors.north_west = -101;
-				tempneighbors.west = -101;
-				tempneighbors.north = -101;
-				tempneighbors.north_east = -101;
-				return tempneighbors;
-			}
-		}
-		else {
-			//right side
-			if (z == 0) {
-				//bottom-right corner
-				tempneighbors.south_east = -101;
-				tempneighbors.north_east = -101;
-				tempneighbors.east = -101;
-				tempneighbors.south = -101;
-				tempneighbors.south_west = -101;
-				return tempneighbors;
-			}
-			else {
-				//top-right corner
-				tempneighbors.south_east = -101;
-				tempneighbors.north_east = -101;
-				tempneighbors.east = -101;
-				tempneighbors.north = -101;
-				tempneighbors.north_west = -101;
-				return tempneighbors;
-			}
-		}
-	}
-	else if (x == 0 || x == 15 * num_chunks_x || z == 0 || z == 15 * num_chunks_z) {
-		//this means that we are along one of the edges of the world, which in turn means that the current grid position only has five neighbors
-		if (x == 0) {
-			//left side
-			tempneighbors.south_west = -101;
-			tempneighbors.north_west = -101;
-			tempneighbors.west = -101;
-			return tempneighbors;
-		}
-		else if (x == 15 * num_chunks_x) {
-			//right side
-			tempneighbors.south_east = -101;
-			tempneighbors.north_east = -101;
-			tempneighbors.east = -101;
-			return tempneighbors;
-		}
-		else if (z == 0) {
-			//near side
-			tempneighbors.south_east = -101;
-			tempneighbors.south = -101;
-			tempneighbors.south_west = -101;
-			return tempneighbors;
-		}
-		else {
-			//far side
-			tempneighbors.north_east = -101;
-			tempneighbors.north = -101;
-			tempneighbors.north_west = -101;
-			return tempneighbors;
-		}
-	}
-	else {
-		//now we're not along an edge or in a corner, thus, our current grid position neighbors eight other grid positions
-		//nothing to change! the struct object can be returned as it is.
-		return tempneighbors;
-	}
-}
 
 /*
 	This function creates and returns the VAO of the solid blocks
@@ -354,6 +215,46 @@ unsigned int World::activeToSolid(int type, int x, int y, int z)
 	glEnableVertexAttribArray(2);
 
 	return solidBlockVAO;
+}
+
+void World::perlinNoise2D(int width, int height, float* fSeed, int nOctaves, float fBias, float* fOutput){
+	// Used 1D Perlin Noise
+		for (int y = 0; y < height; y++)
+			for (int x = 0; x < width; x++)
+			{
+				float fNoise = 0.0f;
+				float fScaleAcc = 0.0f;
+				float fScale = 1.0f;
+
+				for (int o = 0; o < nOctaves; o++)
+				{
+					int nPitch = width >> o;
+					int nSampleX1 = (x / nPitch) * nPitch;
+					int nSampleY1 = (y / nPitch) * nPitch;
+
+					int nSampleX2 = (nSampleX1 + nPitch) % width;
+					int nSampleY2 = (nSampleY1 + nPitch) % width;
+
+					float fBlendX = (float)(x - nSampleX1) / (float)nPitch;
+					float fBlendY = (float)(y - nSampleY1) / (float)nPitch;
+
+					float fSampleT = (1.0f - fBlendX) * fSeed[nSampleY1 * width + nSampleX1] + fBlendX * fSeed[nSampleY1 * width + nSampleX2];
+					float fSampleB = (1.0f - fBlendX) * fSeed[nSampleY2 * width + nSampleX1] + fBlendX * fSeed[nSampleY2 * width + nSampleX2];
+
+					fScaleAcc += fScale;
+					fNoise += (fBlendY * (fSampleB - fSampleT) + fSampleT) * fScale;
+					fScale = fScale / fBias;
+				}				
+
+				// Scale to seed range
+				//fOutput[y * width + x] = fNoise / fScaleAcc;
+				coloumns.push_back({});
+				auto& vertex = coloumns.back();
+				vertex.coloumns = { glm::vec2(0, (int)(100 * (fNoise / fScaleAcc))) };
+				vertex.location_components = { glm::vec2(x, y) };
+		
+				//if (y < 1) std::cout << "x: " << x << " y: " << y << " output: " << 100 /*** coloumns[y * width + x].coloumns[0].y*/ << std::endl;
+			}
 }
 
 
