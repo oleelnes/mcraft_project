@@ -96,7 +96,7 @@ void main(){
             FragColor = vec4(result, 1.0) * u_color;
             }
         else{
-            FragColor = vec4(result, 1.0);
+            FragColor = vec4(result, 1.0) * texColor.a;
         }
     }
     else{
@@ -127,9 +127,9 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir){
          diffuse *= vec3(texColor);
          specular *= vec3(texColor);
     }
-    ambient *= attenuation;
-    diffuse *= attenuation;
-    specular *= attenuation;
-    return (ambient + diffuse + specular);
+    //ambient *= attenuation;
+    //diffuse *= attenuation;
+    //specular *= attenuation;
+    return (ambient + diffuse) * (4.0f, 4.0f, 4.0f) * texColor.a; //FJERNET + specular
 
 }

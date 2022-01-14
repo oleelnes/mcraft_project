@@ -1,4 +1,10 @@
 #pragma once
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>|
@@ -28,7 +34,7 @@ private:
 	float lastY = 800.0f / 2;
 	double xPos = 0.0f;
 	double yPos = 0.0f;
-	float sensitivity = 10.1f; //originalt: 0.1f
+	float sensitivity = 5.1f; //originalt: 0.1f
 	float time;
 	float timeBuffer;
 	

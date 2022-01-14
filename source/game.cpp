@@ -31,7 +31,9 @@ void game::run(){
 	glEnable(GL_DEPTH_TEST);
 	deltaTime = 0.0f;
 	lastFrame = 0.0f;
-
+	
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	int gamemode = 0;
 	int main_state = 0;
 	int score = 0;
@@ -39,14 +41,19 @@ void game::run(){
 
 	time = 0.0f;
 	timeBuffer = 0.0f;
+	float sleptTime = 0.0f;
+	float drawingTime = 0.0f;
 
 	glClearColor(0.2f, 0.03f, 0.5f, 1.0f);
 	while (!glfwWindowShouldClose(gameWindow->winWindow)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
 		renderHandler->updateSpeed(2.5 * deltaTime);
+		drawingTime = deltaTime - sleptTime;
+		Sleep((1.0f / 30.0f) * 1000.0f);
+		sleptTime = ((1.0f / 30.0f) * 1000.0f) - drawingTime;
+		lastFrame = currentFrame;
 		
 		switch (main_state) {
 		case 0: //menu -- decides int gamemode and changes main_state to 1 or 2 depending on whether a gamemode has been selected or if exit game has been selected
@@ -84,7 +91,7 @@ void game::input()
 {
 	if (glfwGetKey(gameWindow->winWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(gameWindow->winWindow, true);
-		
+		delete renderHandler;
 	}
 	float cameraSpeed = 7 * deltaTime;
 	if (glfwGetKey(gameWindow->winWindow, GLFW_KEY_UP) == GLFW_PRESS || (glfwGetMouseButton(gameWindow->winWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS

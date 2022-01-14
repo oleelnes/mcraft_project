@@ -26,7 +26,9 @@ void RenderHandler::renderer(){
 	main_shader->use();
 	transformations();
 	light();
+	
 	renderWorld();
+	
 	glUseProgram(0);
 }
 
@@ -40,10 +42,11 @@ void RenderHandler::renderer(){
 */
 void RenderHandler::keyInput(int key, float cameraspeed){
 	//Camera movement: WASD + QE (ascend/descend)
+	// 
 	//forwards
-	
 	if (key == 0)
 		cameraPos += cameraspeed * cameraFront;
+	
 	//backwards
 	if (key == 1)
 		cameraPos -= cameraspeed * cameraFront;
@@ -62,7 +65,8 @@ void RenderHandler::keyInput(int key, float cameraspeed){
 
 	//Movement of active cube: arrows
 	//up
-	
+	pointLightPositions[0].x = cameraPos.x;
+	pointLightPositions[0].z = cameraPos.z;
 }
 
 /*
@@ -109,6 +113,7 @@ void RenderHandler::renderWorld(){
 		}
 		glUseProgram(0);
 		glBindVertexArray(0);
+		//glDisable(GL_BLEND);
 	}
 }
 
@@ -128,6 +133,9 @@ GLuint& RenderHandler::currentTexture(int block_type, int block_surface)
 		else
 			return texture->dirt_sides;
 		break;
+	case 2: 
+		
+		return texture->water;
 	default:
 		std::cout << "No valid block_type has been entered" << std::endl;
 		break;
@@ -142,7 +150,7 @@ void RenderHandler::init() {
 	cameraInit();
 	projectionInit();
 
-	world->generate_terrain(64, 64);
+	world->generate_terrain(64 * 3, 64 * 3);
 	glGenVertexArrays(1, &worldVAO);
 	worldVAO = world->createTerrainVAO();
 	srand(time(NULL)); rand();
@@ -152,14 +160,14 @@ void RenderHandler::init() {
 
 //Camera and transformations
 void RenderHandler::cameraInit() {
-	cameraPos = glm::vec3(6.0f, 60.0f, 8.0f);
+	cameraPos = glm::vec3(32.0f, 40.0f, 32.0f);
 	cameraFront = glm::vec3(0.0f, 0.0f, 0.0f);
 	cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 }
 
 void RenderHandler::transformations() {
 	// view/projection transformations
-	projection = glm::perspective(glm::radians(85.0f), 1920.0f / 1080.0f, 0.1f, 100.0f);
+	projection = glm::perspective(glm::radians(85.0f), 1920.0f / 1080.0f, 0.1f, 150.0f);
 	view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	main_shader->setMat4("projection", projection);
 	main_shader->setMat4("view", view);
@@ -202,7 +210,7 @@ void RenderHandler::projectionInit() {
 	//projection * view * model * aPos -> these three initiations could possibly be elsewhere
 	model = glm::mat4(1.0f);
 	view = glm::mat4(1.0f);
-	projection = glm::perspective(glm::radians(85.0f), 1920.0f / 1080.0f, 0.1f, 100.0f);
+	projection = glm::perspective(glm::radians(85.0f), 1920.0f / 1080.0f, 0.1f, 150.0f);
 
 	//levelShader uniform locations
 	modelLoc = main_shader->getUniformLoc("model");
@@ -211,10 +219,4 @@ void RenderHandler::projectionInit() {
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 	projectionLoc = main_shader->getUniformLoc("projection");
 	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-}
-
-
-void RenderHandler::setGameOver(){
-	if (layer == 1) gameOver = true;
-	else gameOver = false;
 }

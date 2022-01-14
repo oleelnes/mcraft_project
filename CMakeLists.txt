@@ -3,7 +3,7 @@
 #
 cmake_minimum_required (VERSION 3.15)
 
-project ("LikeCraft" VERSION 0.1)
+project ("LikeCraft" VERSION 0.1.1)
 
 # executable file creation
 add_executable(${PROJECT_NAME})
@@ -82,6 +82,9 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/textures/dirt_bottom.png
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/resources/textures)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/textures/dirt_sides.png
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/resources/textures)
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/textures/water_block.png
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/resources/textures)
 
 

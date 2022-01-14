@@ -15,6 +15,7 @@ public:
 	GLuint dirt_top;
 	GLuint dirt_bottom;
 	GLuint dirt_sides;
+	GLuint water;
 	
 
 

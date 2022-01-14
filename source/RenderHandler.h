@@ -59,9 +59,8 @@ public:
 	void mouseInput(glm::vec3 direction);
 	bool getGameOver();
 	Shader* main_shader = new Shader("resources/shaders/blockout.vs", "resources/shaders/blockout.fs");
-	glm::vec3 pointLightPositions[2] = {
-		glm::vec3(5.5f,  10.5f,  5.5f),
-		glm::vec3(0.7f,  0.2f,  2.0f)
+	glm::vec3 pointLightPositions[1] = {
+		glm::vec3(32.0f,  100.0f,  32.0f),
 	};
 private:
 
