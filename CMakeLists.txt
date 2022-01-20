@@ -3,13 +3,14 @@
 #
 cmake_minimum_required (VERSION 3.15)
 
-project ("LikeCraft" VERSION 0.1.1)
+project ("LikeCraft" VERSION 0.1.2)
 
 # executable file creation
 add_executable(${PROJECT_NAME})
 
 # Add subdirectory with dependencies
 add_subdirectory(external)
+
 
 # Additional source files added here
 target_sources(
@@ -33,7 +34,9 @@ target_sources(
     "source/World.cpp"
      "source/TextureLoader.cpp" 
      "source/TextureLoader.h"
-      "source/ShaderProgram.h" "source/Overlay.h" "source/Overlay.cpp"
+      "source/ShaderProgram.h" 
+      "source/Overlay.h" 
+      "source/Overlay.cpp"
     ${CMAKE_CURRENT_LIST_DIR}/source/imgui/imconfig.h
     ${CMAKE_CURRENT_LIST_DIR}/source/imgui/imgui.cpp
     ${CMAKE_CURRENT_LIST_DIR}/source/imgui/imgui_demo.cpp
@@ -61,7 +64,6 @@ target_link_libraries(
     glad::glad
     glfw
     glm
-    tinyobjloader
     stbimage::stbimage)
 
     # Copying the blockout.vs file to current binary directory

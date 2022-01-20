@@ -35,9 +35,13 @@ struct Coloumn{
     std::vector<glm::vec2> coloumns; // (top_block, bottom_block) in y values.
 };
 
-struct VisibleBlock {
-    glm::vec3 location;
-    int block_type; // 1 = dirt, 2 = stone, etc
+//TODO: change location to vec2 and fix the issues this creates in the VAO generation.
+struct VisibleBlockColoumn {
+    glm::vec3 location; //location is the same for every coloumn
+    //std::vector<int> top;
+    //std::vector<int> length; //top[0] has the length length[0] and the type block_type[0]
+    std::vector<int> block_type; // 0 = dirth, 1 = grass dirt, 2 = water, etc
+    //int block_type;
 };
 
 struct Block {
@@ -51,7 +55,7 @@ class World {
 public:
     World();
     std::vector<Coloumn> coloumns{};
-    std::vector<VisibleBlock> visible_blocks{};
+    std::vector<VisibleBlockColoumn> visible_blocks{};
     std::vector<Chunk> chunks{};
     void generate_terrain(int chunks_x, int chunks_z); //chunks has to be an even number
     void add_block(int x, int y, int z);
@@ -62,6 +66,10 @@ public:
     GLuint createTerrainVAO();
     GLuint terrainVAO;
 
+    GLuint calcVisibleBlocks(int pos_x, int pos_z, int render_distance);
+    GLuint createVisibleVAO(int pos_x, int pos_z, int render_distance);
+
+    int world_width, world_length;
 
 
 

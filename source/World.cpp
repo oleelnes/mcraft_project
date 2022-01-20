@@ -10,12 +10,15 @@ World::World(){
 	//glGenVertexArrays(1, &terrainVAO);
 	//generate_terrain(1);
 	//terrainVAO = createTerrainVAO();
-	srand(time(NULL)); rand();
+	world_width = 0; world_length = 0;
+	srand(123456); rand();
 }
 
 void World::generate_terrain(int width, int length){
 	int x = width;
 	int y = length;
+
+	world_width = width; world_length = length;
 
 
 
@@ -34,63 +37,43 @@ void World::add_block(int x, int y, int z){
 }
 
 void World::calculateVisibleInit(int chunk_x, int chunk_z, int width, int length){
-	//first, set all top blocks to visible
-	//for the time being, all top blocks are dirt.
-	for (int i = 0; i < coloumns.size(); i++) {
-		visible_blocks.push_back({});
-		auto& vertex = visible_blocks.back();
-		vertex.location = { coloumns[i].location_components.x, coloumns[i].coloumns[0].y, coloumns[i].location_components.y };
-		vertex.block_type = 1;
-		//the above line sets all top blocks visible (but only the 1st instance of the coloumns vec of coloumns).
-	}
-
-	//the underneath function renders all the edge blocks -- currently only one of the walls :ODOT
-
-	visible_blocks.push_back({});
-	auto& vertex = visible_blocks.back();
-	vertex.location = { coloumns[32 * width + 32].location_components.x, coloumns[32 * width + 32].coloumns[0].y + 3, coloumns[32 * width + 32].location_components.y };
-	vertex.block_type = 2;
-	
 	//finds remaining visible blocks by checking a coloumn's neighboring coloumns' top level (north, west, south, east)
-	for (int z = 1; z < length - 1; z++) {
-		for (int x = 1; x < width - 1; x++) {
-			int diff = 0;
-			if (coloumns[static_cast<__int64>(z) * width + x - 1].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y > diff)
-				diff = coloumns[static_cast<__int64>(z) * width + x - 1].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y;
-			if (coloumns[static_cast<__int64>(z) * width + x + 1].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y > diff)
-				diff = coloumns[static_cast<__int64>(z) * width + x + 1].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y;
-			if (coloumns[static_cast<__int64>(z) * width + x + width].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y > diff)
-				diff = coloumns[static_cast<__int64>(z) * width + x + width].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y;
-			if (coloumns[static_cast<__int64>(z) * width + x - width].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y > diff)
-				diff = coloumns[static_cast<__int64>(z) * width + x - width].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y;
+	for (int z = 0; z < length; z++) {
+		for (int x = 0; x < width; x++) {
+			visible_blocks.push_back({});
+			auto& vertex = visible_blocks.back();
+			vertex.location = { coloumns[static_cast<__int64>(z) * width + x].location_components.x, coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y,
+				coloumns[static_cast<__int64>(z) * width + x].location_components.y };
+			vertex.block_type = { 1 };
 
-			for (int i = 0; i < diff; i++) {
+			if (x == 32 && z == 32) {
 				visible_blocks.push_back({});
 				auto& vertex = visible_blocks.back();
-				vertex.location = { coloumns[static_cast<__int64>(z) * width + x].location_components.x, coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - i, 
-					coloumns[static_cast<__int64>(z) * width + x].location_components.y };
-				vertex.block_type = 0;
+				vertex.location = { coloumns[32 * width + 32].location_components.x, coloumns[32 * width + 32].coloumns[0].y + 3, coloumns[32 * width + 32].location_components.y };
+				vertex.block_type = { 0 };
 			}
-			int neg_diff = 0;
-			if (coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x - 1].coloumns[0].y > neg_diff)
-				neg_diff = coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x - 1].coloumns[0].y;
-			if (coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x + 1].coloumns[0].y > neg_diff)
-				neg_diff = coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x + 1].coloumns[0].y;
-			if (coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x + width].coloumns[0].y > neg_diff)
-				neg_diff = coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x + width].coloumns[0].y;
-			if (coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x - width].coloumns[0].y > neg_diff)
-				neg_diff = coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x - width].coloumns[0].y;
 
-			for (int i = 0; i < neg_diff; i++) {
-				visible_blocks.push_back({});
-				auto& vertex = visible_blocks.back();
-				vertex.location = { coloumns[static_cast<__int64>(z) * width + x].location_components.x, coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - i,
-					coloumns[static_cast<__int64>(z) * width + x].location_components.y };
-				vertex.block_type = 0;
+			if (x > 0 && x < width - 1 && z > 0 && z < length - 1) {
+				int neg_diff = 0;
+				if (coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x - 1].coloumns[0].y > neg_diff)
+					neg_diff = coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x - 1].coloumns[0].y;
+				if (coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x + 1].coloumns[0].y > neg_diff)
+					neg_diff = coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x + 1].coloumns[0].y;
+				if (coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x + width].coloumns[0].y > neg_diff)
+					neg_diff = coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x + width].coloumns[0].y;
+				if (coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x - width].coloumns[0].y > neg_diff)
+					neg_diff = coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - coloumns[static_cast<__int64>(z) * width + x - width].coloumns[0].y;
+
+				for (int i = 1; i < neg_diff; i++) {
+					visible_blocks.push_back({});
+					auto& vertex = visible_blocks.back();
+					vertex.location = { coloumns[static_cast<__int64>(z) * width + x].location_components.x, coloumns[static_cast<__int64>(z) * width + x].coloumns[0].y - i,
+						coloumns[static_cast<__int64>(z) * width + x].location_components.y };
+					vertex.block_type = { 0 };
+				}
 			}
 		}
 	}
-	
 }
 
 int World::calcInternalGridPos(int x, int z) { return ((16 * z) + x); }
@@ -136,6 +119,8 @@ GLuint World::createTerrainVAO(){
 
 	return VAO;
 }
+
+
 
 void World::perlinNoise2D(int width, int height, float* fSeed, int nOctaves, float fBias, float* fOutput){
 	// Used 1D Perlin Noise

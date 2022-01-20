@@ -27,7 +27,7 @@ void RenderHandler::renderer(){
 	transformations();
 	light();
 	
-	renderWorld();
+	renderWorld(100);
 	
 	glUseProgram(0);
 }
@@ -94,23 +94,37 @@ int RenderHandler::getScore(){
 }
 
 
-void RenderHandler::renderWorld(){
+void RenderHandler::renderWorld(int render_distance){
 	if (world->visible_blocks.size() == 0) {
 		std::cout << "no world has been generated -- please generate a world first!" << std::endl;
 	}
 	else {	
 		main_shader->use();
 		main_shader->setInt("withTexture", 1);
+		//worldVAO = world->calcVisibleBlocks(cameraPos.x, cameraPos.z, render_distance);
 		glBindVertexArray(worldVAO);
-		for (int i = 0; i < world->visible_blocks.size(); i++) {
+		for (int z = -render_distance; z < render_distance; z++) {
+			for (int x = -render_distance; x < render_distance; x++) {
+				int i = ((int)cameraPos.z + z) * (64 * 3) + ((int)cameraPos.x + x);
+				if (i < world->visible_blocks.size() && i >= 0 && (cameraPos.x + x) >= 0 && (cameraPos.x + x) < 64 * 3 && (cameraPos.z + z) >= 0 &&
+					(cameraPos.z + z) < 64 * 3) {
+					for (int j = 0; j < 36; j += 6) {
+						GLuint currentTex = currentTexture(world->visible_blocks[i].block_type[0], j);
+						glBindTexture(GL_TEXTURE_2D, currentTex);
+						glDrawArrays(GL_TRIANGLES, (36 * i) + j, 6);
+					}
+				}
+				//std::cout << "block number " << i << " has been drawn" << std::endl;
+			}
+		}
+		/*for (int i = 0; i < world->visible_blocks.size(); i++) {
 			for (int j = 0; j < 36; j += 6) {
-				//select face
 				GLuint currentTex = currentTexture(world->visible_blocks[i].block_type, j);
 				glBindTexture(GL_TEXTURE_2D, currentTex);
 				glDrawArrays(GL_TRIANGLES, (36 * i) + j, 6);
 			}
-			//std::cout << "block number " << i << " has been drawn" << std::endl;
-		}
+		}*/
+		
 		glUseProgram(0);
 		glBindVertexArray(0);
 		//glDisable(GL_BLEND);

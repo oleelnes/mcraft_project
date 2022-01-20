@@ -130,6 +130,6 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir){
     //ambient *= attenuation;
     //diffuse *= attenuation;
     //specular *= attenuation;
-    return (ambient + diffuse) * (4.0f, 4.0f, 4.0f) * texColor.a; //FJERNET + specular
+    return (ambient + diffuse) * (2.0f, 2.0f, 2.0f) * texColor.a; //FJERNET + specular
 
 }

@@ -28,10 +28,11 @@ void game::run(){
 	ImGui_ImplGlfw_InitForOpenGL(gameWindow->winWindow, true);
 	ImGui_ImplOpenGL3_Init("#version 430 core");
 	
-	glEnable(GL_DEPTH_TEST);
 	deltaTime = 0.0f;
 	lastFrame = 0.0f;
 	
+	glEnable(GL_FRAMEBUFFER_SRGB);
+	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	int gamemode = 0;
@@ -51,8 +52,8 @@ void game::run(){
 		deltaTime = currentFrame - lastFrame;
 		renderHandler->updateSpeed(2.5 * deltaTime);
 		drawingTime = deltaTime - sleptTime;
-		Sleep((1.0f / 30.0f) * 1000.0f);
-		sleptTime = ((1.0f / 30.0f) * 1000.0f) - drawingTime;
+		Sleep((1.0f / 60.0f) * 1000.0f);
+		sleptTime = ((1.0f / 60.0f) * 1000.0f) - drawingTime;
 		lastFrame = currentFrame;
 		
 		switch (main_state) {

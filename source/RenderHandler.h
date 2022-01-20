@@ -128,7 +128,7 @@ private:
 	int original_bottom = 3;
 	
 
-	void renderWorld();
+	void renderWorld(int render_distance);
 	GLuint& currentTexture(int block_type, int block_surface);
 	void init();
 	void projectionInit();
