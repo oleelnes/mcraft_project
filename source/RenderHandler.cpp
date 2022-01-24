@@ -95,66 +95,10 @@ int RenderHandler::getScore(){
 
 
 void RenderHandler::renderWorld(int render_distance){
-	if (world->visible_blocks.size() == 0) {
-		std::cout << "no world has been generated -- please generate a world first!" << std::endl;
-	}
-	else {	
-		main_shader->use();
-		main_shader->setInt("withTexture", 1);
-		//worldVAO = world->calcVisibleBlocks(cameraPos.x, cameraPos.z, render_distance);
-		glBindVertexArray(worldVAO);
-		for (int z = -render_distance; z < render_distance; z++) {
-			for (int x = -render_distance; x < render_distance; x++) {
-				int i = ((int)cameraPos.z + z) * (64 * 3) + ((int)cameraPos.x + x);
-				if (i < world->visible_blocks.size() && i >= 0 && (cameraPos.x + x) >= 0 && (cameraPos.x + x) < 64 * 3 && (cameraPos.z + z) >= 0 &&
-					(cameraPos.z + z) < 64 * 3) {
-					for (int j = 0; j < 36; j += 6) {
-						GLuint currentTex = currentTexture(world->visible_blocks[i].block_type[0], j);
-						glBindTexture(GL_TEXTURE_2D, currentTex);
-						glDrawArrays(GL_TRIANGLES, (36 * i) + j, 6);
-					}
-				}
-				//std::cout << "block number " << i << " has been drawn" << std::endl;
-			}
-		}
-		/*for (int i = 0; i < world->visible_blocks.size(); i++) {
-			for (int j = 0; j < 36; j += 6) {
-				GLuint currentTex = currentTexture(world->visible_blocks[i].block_type, j);
-				glBindTexture(GL_TEXTURE_2D, currentTex);
-				glDrawArrays(GL_TRIANGLES, (36 * i) + j, 6);
-			}
-		}*/
-		
-		glUseProgram(0);
-		glBindVertexArray(0);
-		//glDisable(GL_BLEND);
-	}
+	main_shader->setInt("withTexture", 1);
+	world->drawWorld(main_shader->ID, worldVAO, render_distance, cameraPos.x, cameraPos.z);
 }
 
-GLuint& RenderHandler::currentTexture(int block_type, int block_surface)
-{
-	// TODO: insert return statement here
-
-	switch (block_type) {
-	case 0:
-		return texture->dirt_bottom;
-	case 1:
-		//dirt
-		if (block_surface == 30)
-			return texture->dirt_top;
-		if (block_surface == 24)
-			return texture->dirt_bottom;
-		else
-			return texture->dirt_sides;
-		break;
-	case 2: 
-		
-		return texture->water;
-	default:
-		std::cout << "No valid block_type has been entered" << std::endl;
-		break;
-	}
-}
 
 void RenderHandler::init() {
 	//world->generateTerrain

@@ -8,10 +8,16 @@ by Ole Kristian Elnæs
 
 
 
-Version 0.1.2: 
-* Whole world is not rendered at once anymore.
-* Fixed some major flaws in the algorithm that finds visible blocks.
-* + Failed attempts at various things.
+Version 0.1.3: 
+* Completely overhauled chunk management system by adding a class "World" whose main job is
+having control over which chunks are in render distance at any given moment. Chunk has thus become a
+subsidiary of World. (I could go out in broad detail about all of this because the realizations I've had -- as 
+well as the laps around the stages/stadium of grief -- have been intriguing, but I won't since this is merely a 
+version update message).
+	- To avoid confusion: The old class "World" has become the class "Chunk" and 
+	the new class with the name "World" is brand new.
+* Code for the overhaul is not complete -- tests have not been conducted and it is as of yet unknown
+whether anything will work. 
 
 Version 0.1 is done when these things are implemented:
 * Storing game data on computer.
@@ -46,7 +52,11 @@ All textures are self-made, but obiously inspired by Minecraft by Mojang.
 
 
 Versions:
-0.1.2: Current version -- see details above.
+0.1.3: Current version -- see details above.
+
+0.1.2:
+* Whole world is not rendered at once anymore.
+* Fixed some major flaws in the algorithm that finds visible blocks.
 
 0.1.1: 
 * Improved illumination. 

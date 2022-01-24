@@ -1,135 +1,39 @@
-#include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
-#include "TextureLoader.h"
-#include "Shader.h"
+#include "Chunk.h"
 
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <cmath>
-#include <vector>
-#include <set>
-
-struct BlockVertex {
-    glm::vec3 location;
-    glm::vec3 normals;
-    glm::vec2 texCoords;
+struct ChunkList {
+	unsigned int chunkGridPosition;
+	Chunk* chunk;
 };
 
-
-
-struct Chunk {
-    int chunk_type;
-    glm::vec3 x_vector; 
-    glm::vec3 z_vector;
-};
-
-struct Coloumn{
-    glm::vec2 location_components; // (location x, location z)
-    std::vector<glm::vec2> coloumns; // (top_block, bottom_block) in y values.
-};
-
-//TODO: change location to vec2 and fix the issues this creates in the VAO generation.
-struct VisibleBlockColoumn {
-    glm::vec3 location; //location is the same for every coloumn
-    //std::vector<int> top;
-    //std::vector<int> length; //top[0] has the length length[0] and the type block_type[0]
-    std::vector<int> block_type; // 0 = dirth, 1 = grass dirt, 2 = water, etc
-    //int block_type;
-};
-
-struct Block {
-    glm::vec3 location;
-    glm::vec3 normals;
-    glm::vec2 texCoords;
-    glm::vec2 chunk;
+struct RenderBox {
+	int xLeft;
+	int xRight;
+	int zTop;
+	int zBottom;
 };
 
 class World {
 public:
-    World();
-    std::vector<Coloumn> coloumns{};
-    std::vector<VisibleBlockColoumn> visible_blocks{};
-    std::vector<Chunk> chunks{};
-    void generate_terrain(int chunks_x, int chunks_z); //chunks has to be an even number
-    void add_block(int x, int y, int z);
-    void calculateVisibleInit(int chunk_x, int chunk_z, int num_chunks_x, int num_chunks_z);
-    int calcInternalGridPos(int x, int z);
-    int calcGlobalGridPos(int x, int z, int chunk_x, int chunk_z, int num_chunks_x);
-    glm::vec2 calcColoumnHeight(int x, int z, int num_chunks_x, int num_chunks_z);
-    GLuint createTerrainVAO();
-    GLuint terrainVAO;
-
-    GLuint calcVisibleBlocks(int pos_x, int pos_z, int render_distance);
-    GLuint createVisibleVAO(int pos_x, int pos_z, int render_distance);
-
-    int world_width, world_length;
-
-
-
-
-
-
-    //OLD
-    std::vector<BlockVertex> solidBlocks{};
-    std::vector<BlockVertex> activeBlock{};
-    unsigned int newActiveBlock(int type, int x_start, int y_start, int z_start, int x_size, int y_size, int z_size);
-    unsigned int activeToSolid(int type, int x, int y, int z);
-   // unsigned int activeBlock(int type);
+	World(uint64_t seed, unsigned int world_size, unsigned int chunk_size, unsigned int render_distance, int player_x, int player_z);
+	void renderWorld(GLuint& shader, int player_x, int player_z);
 private:
-
-    float cube_vertices[288]{
-    //----position---- ------normal------ --texture-- 
-    0.0f, 0.0f, 0.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, //back
-    1.0f, 0.0f, 0.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 0.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 0.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 0.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f,
-
-    0.0f, 0.0f, 1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, //front
-    1.0f, 0.0f, 1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,
-    0.0f, 1.0f, 1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f,
-
-    0.0f, 1.0f, 1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, //left
-    0.0f, 1.0f, 0.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
-    0.0f, 0.0f, 0.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
-    0.0f, 0.0f, 1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-    0.0f, 1.0f, 1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
-
-    1.0f, 1.0f, 1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, //right
-    1.0f, 1.0f, 0.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
-    1.0f, 0.0f, 0.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
-    1.0f, 0.0f, 1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
-
-    0.0f, 0.0f, 0.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,//bottom
-    1.0f, 0.0f, 0.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f,
-    1.0f, 0.0f, 1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
-    1.0f, 0.0f, 1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 0.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,
-
-    0.0f, 1.0f, 0.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, //top
-    1.0f, 1.0f, 0.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
-    0.0f, 1.0f, 1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
-    };
-
-    void perlinNoise2D(int width, int height, float* fSeed, int nOctaves, float fBias, float* fOutput);
-    float* fNoiseSeed2D = nullptr;
-    float* fPerlinNoise2D = nullptr;
+	void updateRenderBox(int player_x, int player_z);
+	unsigned int calculateChunkGridPosition(int player_x, int player_z);
+	unsigned int getGridOffset(int player_x, int player_z, bool getX);
+	void updateTerrain();
+	void updateWorld(int player_x, int player_z);
+	void updateChunkList(int player_x, int player_z);
+	void addChunk(int xOffset, int zOffset);
+	void removeChunk(int chunkGridPosition);
+	unsigned int seedShuffler(int ChunkGridposition);
+	RenderBox renderBox;
+	std::vector<ChunkList> chunkList;
+	std::vector<glm::vec2> renderCheckPoints;
+	uint64_t masterSeed;
+	unsigned int renderDist;
+	unsigned int chunkSize;
+	unsigned int worldSize;
+	unsigned int renderDistance;
+	int counter;
+	//Todo: a function that checks how many render checkpoints there needs to be! algorithm
 };

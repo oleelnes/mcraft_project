@@ -30,8 +30,8 @@ target_sources(
      "source/Plane.h" 
     "source/ImguiHandler.h" 
     "source/ImguiHandler.cpp"
-    "source/World.h" 
-    "source/World.cpp"
+    "source/Chunk.h" 
+    "source/Chunk.cpp"
      "source/TextureLoader.cpp" 
      "source/TextureLoader.h"
       "source/ShaderProgram.h" 
@@ -47,7 +47,7 @@ target_sources(
     ${CMAKE_CURRENT_LIST_DIR}/source/imgui/imgui_impl_opengl3.cpp
     ${CMAKE_CURRENT_LIST_DIR}/source/imgui/imgui_impl_opengl3.h
     ${CMAKE_CURRENT_LIST_DIR}/source/imgui/imgui_internal.h
-    ${CMAKE_CURRENT_LIST_DIR}/source/imgui/imgui_widgets.cpp   )
+    ${CMAKE_CURRENT_LIST_DIR}/source/imgui/imgui_widgets.cpp    "source/World.cpp" "source/World.h")
 
 # Include directories
 target_include_directories(
